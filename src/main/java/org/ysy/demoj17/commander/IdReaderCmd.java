@@ -23,6 +23,5 @@ public class IdReaderCmd implements CmdPublisher {
         bufferedWriter.write(deviceId);
         bufferedWriter.write("&");
         bufferedWriter.write("swipe");
-        bufferedWriter.newLine();
     }
 }

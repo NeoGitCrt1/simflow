@@ -27,6 +27,5 @@ public class WeighingCmd implements CmdPublisher {
         bufferedWriter.write(deviceId);
         bufferedWriter.write("&");
         bufferedWriter.write("prepare -d0 "+ d[0] +" -d1 " + d[1] + " -d2 " + d[2] + " -d3 "+ d[3]);
-        bufferedWriter.newLine();
     }
 }

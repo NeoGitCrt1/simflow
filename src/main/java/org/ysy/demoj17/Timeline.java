@@ -1,9 +1,5 @@
 package org.ysy.demoj17;
 
-import org.ysy.demoj17.commander.IdReaderCmd;
-import org.ysy.demoj17.commander.ManualConfirmBtnCmd;
-import org.ysy.demoj17.commander.PrepareTruckAndDriverCmd;
-import org.ysy.demoj17.commander.WeighingCmd;
 import org.ysy.demoj17.config.OrchestrationConfig;
 import org.ysy.demoj17.latch.FlowLatch;
 
@@ -11,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -29,33 +26,27 @@ public class Timeline extends ArrayList<Timeline.Node> {
     }
 
     public void register(OrchestrationConfig.NodeConfig nodeConfig) {
-        CmdPublisher cmdPublisher;
-        switch (nodeConfig.cmdPublisherType) {
-            case "idreader":
-                cmdPublisher = new IdReaderCmd();
-                break;
-            case "btn":
-                cmdPublisher = new ManualConfirmBtnCmd();
-                break;
-            case "pre":
-                cmdPublisher = new PrepareTruckAndDriverCmd();
-                break;
-            case "w":
-                cmdPublisher = new WeighingCmd();
-                break;
-            default:
-                cmdPublisher = new CmdPublisher() {
-                    @Override
-                    public void init(String truckId, String deviceId, String[] argVal) {
+        CmdPublisher cmdPublisher = null;
+        if (nodeConfig.cmdPublisherType == null) {
+            cmdPublisher = new CmdPublisher() {
+                @Override
+                public void init(String truckId, String deviceId, String[] argVal) {
 
-                    }
+                }
 
-                    @Override
-                    public void send(BufferedWriter bufferedWriter) throws IOException {
+                @Override
+                public void send(BufferedWriter bufferedWriter) throws IOException {
 
-                    }
-                };
+                }
+            };
+        } else {
+            try {
+                cmdPublisher = (CmdPublisher) nodeConfig.cmdPublisherType.clz.getConstructors()[0].newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
         }
+
 
         cmdPublisher.init(nodeConfig.truckId, nodeConfig.deviceId, nodeConfig.argVal);
         this.add(new Node(Duration.ofMillis(nodeConfig.proceedDurationMilli),
@@ -82,6 +73,9 @@ public class Timeline extends ArrayList<Timeline.Node> {
                     flowLatch.hold();
                 }
                 commander.send(bufferedWriter);
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+
                 TimeUnit.MILLISECONDS.sleep(duration.toMillis());
 
             } catch (IOException | InterruptedException e) {

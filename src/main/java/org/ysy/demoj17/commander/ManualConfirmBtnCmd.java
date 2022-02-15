@@ -26,6 +26,5 @@ public class ManualConfirmBtnCmd implements CmdPublisher {
         bufferedWriter.write(deviceId);
         bufferedWriter.write("&");
         bufferedWriter.write("press p " + btn);
-        bufferedWriter.newLine();
     }
 }

@@ -36,6 +36,5 @@ public class PrepareTruckAndDriverCmd implements CmdPublisher {
             stringBuilder.append(entry.getKey()).append(" ").append(entry.getValue()).append(" ");
         }
         bufferedWriter.write(stringBuilder.toString());
-        bufferedWriter.newLine();
     }
 }

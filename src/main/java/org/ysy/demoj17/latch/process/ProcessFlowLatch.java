@@ -5,21 +5,34 @@ import org.ysy.demoj17.latch.FlowLatch;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 
 public class ProcessFlowLatch implements FlowLatch {
 
-    final BufferedReader br;
+    private final DatagramSocket socket;
+    public ProcessFlowLatch(int serverport) throws IOException {
+        socket = new DatagramSocket(serverport);
+    }
+
     public ProcessFlowLatch(String serverIp, int serverport) throws IOException {
-        Socket socket = new Socket(serverIp,serverport);
-        br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        try {
+            socket = new DatagramSocket();
+            socket.connect(InetAddress.getByName(serverIp), serverport);
+        } catch (SocketException | UnknownHostException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
-    public void hold() throws InterruptedException {
-
+    public void hold() {
+        DatagramPacket packet = new DatagramPacket(new byte[1], 1);
         try {
-            String mess = br.readLine();
+            socket.receive(packet);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -27,6 +40,13 @@ public class ProcessFlowLatch implements FlowLatch {
 
     @Override
     public void release() {
-        throw new UnsupportedOperationException();
+        byte[] data = new byte[1];
+        data[0] = 1;
+        DatagramPacket packet = new DatagramPacket(data, 1);
+        try {
+            socket.send(packet);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

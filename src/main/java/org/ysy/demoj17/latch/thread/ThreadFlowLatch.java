@@ -10,8 +10,12 @@ public class ThreadFlowLatch implements FlowLatch {
     private final BlockingQueue<Boolean> channel = new ArrayBlockingQueue<>(1);
 
     @Override
-    public void hold() throws InterruptedException {
-        channel.take();
+    public void hold() {
+        try {
+            channel.take();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

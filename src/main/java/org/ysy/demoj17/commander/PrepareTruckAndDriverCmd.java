@@ -17,7 +17,7 @@ public class PrepareTruckAndDriverCmd implements CmdPublisher {
         if ((cmdArgs.length & 1) == 0) {
             throw new IllegalArgumentException("argVal is not key>val pair");
         }
-        for (int i = 1; i < cmdArgs.length; i += 2) {
+        for (int i = 0; i < cmdArgs.length; i += 2) {
             if (i + 1 >= cmdArgs.length) {
                 break;
             }
